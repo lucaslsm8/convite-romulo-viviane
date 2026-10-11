@@ -59,6 +59,14 @@ function doGet(e) {
   return ContentService.createTextOutput("Questionário Rômulo & Viviane: endpoint ativo.");
 }
 
+/** Rode esta função uma vez pelo editor (▶ Executar) para autorizar o script antes de implantar. */
+function autorizar() {
+  const planilha = SpreadsheetApp.getActiveSpreadsheet();
+  aba_(planilha, ABA_HISTORICO, CAB_HISTORICO);
+  aba_(planilha, ABA_ATUAIS, CAB_ATUAIS);
+  Logger.log("Autorizado. Abas prontas em: " + planilha.getName());
+}
+
 function aba_(planilha, nome, cabecalho) {
   let aba = planilha.getSheetByName(nome);
   if (!aba) aba = planilha.insertSheet(nome);
