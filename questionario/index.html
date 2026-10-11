@@ -65,6 +65,12 @@ body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(
 .count { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .save { font-size: 12px; color: var(--muted); white-space: nowrap; }
 .save.ok { color: var(--ok); }
+.save.pend { color: var(--warn); }
+button.mini { padding: 5px 12px; font-size: 12px; background: var(--accent); color: var(--accent-ink); white-space: nowrap; }
+.q .changed { align-self: flex-start; font-size: 12px; color: var(--warn); border: 1px solid currentColor; border-radius: 99px; padding: 1px 9px; }
+.q .stamp { font-size: 12px; color: var(--muted); }
+.history { font-size: 13px; color: var(--muted); margin: 0; padding-left: 18px; }
+.history li { font-variant-numeric: tabular-nums; }
 .jump { display: flex; gap: 6px; overflow-x: auto; padding-block: 0 10px; scrollbar-width: none; }
 .jump::-webkit-scrollbar { display: none; }
 .jump a { flex: none; display: flex; gap: 8px; align-items: baseline; font-size: 13px; color: var(--muted); text-decoration: none; padding: 4px 10px; border: 1px solid var(--line); border-radius: 99px; }
@@ -201,6 +207,7 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
         <div class="track" aria-hidden="true"><span id="trackFill"></span></div>
         <span class="count" id="count">0 de 0</span>
         <span class="save" id="save" role="status"></span>
+        <button class="mini" id="barSend" type="button" hidden>Atualizar respostas</button>
       </div>
       <nav class="jump" id="jump" aria-label="Blocos do questionário"></nav>
     </div>
@@ -221,12 +228,13 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
   <section class="finish" id="fim">
     <div class="box">
       <h2>Prontinho?</h2>
-      <p id="finishText">Quando terminarem, cliquem em "Enviar respostas". Se depois quiserem mudar alguma coisa, é só editar e enviar de novo.</p>
+      <p id="finishText">Quando terminarem, cliquem em "Enviar respostas". As respostas ficam guardadas: se depois quiserem mudar alguma coisa, é só abrir este mesmo link, editar e clicar em "Atualizar respostas".</p>
       <div class="actions">
         <button class="primary" id="sendBtn" type="button">Enviar respostas</button>
         <button class="ghost" id="copyBtn" type="button">Copiar respostas em texto</button>
       </div>
       <p id="sentMsg" class="msg" role="status" hidden></p>
+      <ul class="history" id="history" hidden></ul>
       <textarea id="copyFallback" readonly hidden aria-label="Respostas em texto"></textarea>
     </div>
   </section>
@@ -330,7 +338,11 @@ const SECTIONS = [
 const ALL_Q = SECTIONS.flatMap(s => s.qs);
 const DRAFT_KEY = "rv-questionario-v1";
 const answers = {};
-let sentAt = null;
+let meta = {};          // id -> quando a resposta foi alterada pela última vez (ISO)
+let sentAt = null;      // último envio para a planilha
+let sentAnswers = null; // cópia das respostas no último envio, para saber o que mudou
+let history = [];       // datas de todos os envios
+let lastEdit = null;
 
 /* ---------- helpers ---------- */
 function h(tag, attrs, ...kids) {
@@ -350,7 +362,6 @@ function answered(q) {
   if (typeof v === "object") return Object.values(v).some(x => x && String(x).trim());
   return String(v).trim() !== "";
 }
-function setSave(text, ok) { const s = document.getElementById("save"); s.textContent = text; s.classList.toggle("ok", !!ok); }
 
 /* ---------- render ---------- */
 function chipGroup(q, opts, multi, extraClass) {
@@ -423,6 +434,7 @@ function renderQ(q) {
       return h("div", { class: "style", id: "st-" + st.id }, sw, sample, h("div", { class: "txt" }, h("h3", { text: st.name }), h("p", { text: st.desc })), chips);
     })));
   }
+  wrap.append(h("div", { class: "stamp", id: "s-" + q.id, hidden: "" }));
   return wrap;
 }
 
@@ -469,71 +481,162 @@ function updateProgress() {
   for (const st of STYLES) document.getElementById("st-" + st.id).dataset.r = (answers.estilos && answers.estilos[st.id]) || "";
 }
 
-/* ---------- salvar no aparelho ---------- */
-function saveLocal() { try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ answers, sentAt })); return true; } catch (e) { return false; } }
-function loadLocal() {
-  try {
-    const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null");
-    if (d && d.answers) Object.assign(answers, d.answers);
-    if (d && d.sentAt) sentAt = d.sentAt;
-  } catch (e) {}
+/* ---------- estado salvo ---------- */
+function fmt(iso) {
+  const d = new Date(iso);
+  return `${d.toLocaleDateString("pt-BR")} às ${d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`;
 }
-let dirtyAfterSend = false;
+function norm(v) {
+  if (v == null) return null;
+  if (Array.isArray(v)) return v.length ? [...v].sort() : null;
+  if (typeof v === "object") { const o = {}; for (const k of Object.keys(v).sort()) if (v[k] && String(v[k]).trim()) o[k] = String(v[k]).trim(); return Object.keys(o).length ? o : null; }
+  const t = String(v).trim(); return t || null;
+}
+function changedIds() {
+  if (!sentAnswers) return [];
+  return ALL_Q.filter(q => JSON.stringify(norm(answers[q.id])) !== JSON.stringify(norm(sentAnswers[q.id]))).map(q => q.id);
+}
+function isDirty() { return sentAt ? changedIds().length > 0 : ALL_Q.some(answered); }
+
+function saveLocal() {
+  try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ answers, meta, sentAt, sentAnswers, history, lastEdit })); return true; } catch (e) { return false; }
+}
+function adopt(d) {
+  for (const k of Object.keys(answers)) delete answers[k];
+  Object.assign(answers, d.answers || {});
+  meta = d.meta || {};
+  sentAt = d.sentAt || null;
+  sentAnswers = d.sentAnswers || null;
+  history = d.history || [];
+  lastEdit = d.lastEdit || null;
+}
+function loadLocal() {
+  try { const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null"); if (d && d.answers) adopt(d); } catch (e) {}
+}
+
 function setAnswer(id, value) {
   answers[id] = value;
-  if (sentAt) dirtyAfterSend = true;
-  setSave(saveLocal() ? "Salvo neste aparelho" : "", true);
+  meta[id] = lastEdit = new Date().toISOString();
+  saveLocal();
   updateProgress();
-  if (dirtyAfterSend) document.getElementById("sendBtn").textContent = "Enviar alterações";
+  refreshState();
 }
 
-/* ---------- enviar ---------- */
-function showMsg(text, kind) { const m = document.getElementById("sentMsg"); m.hidden = false; m.textContent = text; m.className = "msg " + kind; }
+/* ---------- mostra o que já foi enviado e o que mudou ---------- */
+function showMsg(text, kind) { const m = document.getElementById("sentMsg"); m.hidden = !text; m.textContent = text || ""; m.className = "msg " + (kind || ""); }
 
-function showSentState() {
-  if (sentAt && !dirtyAfterSend) {
-    const d = new Date(sentAt);
-    showMsg(`Respostas enviadas em ${d.toLocaleDateString("pt-BR")} às ${d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}. Muito obrigado! Se quiserem mudar algo, é só editar e enviar de novo.`, "ok");
-    document.getElementById("sendBtn").textContent = "Enviar de novo";
+function refreshState() {
+  const changed = new Set(changedIds());
+  const dirty = isDirty();
+  for (const q of ALL_Q) {
+    const el = document.getElementById("s-" + q.id);
+    const on = changed.has(q.id);
+    el.hidden = !on;
+    el.className = on ? "changed" : "stamp";
+    el.textContent = on ? "Alterada, falta atualizar" : "";
+  }
+  const save = document.getElementById("save"), barSend = document.getElementById("barSend"), btn = document.getElementById("sendBtn");
+  if (!sentAt) {
+    save.textContent = ALL_Q.some(answered) ? "Rascunho salvo" : ""; save.className = "save ok";
+    barSend.hidden = true;
+    btn.textContent = "Enviar respostas"; btn.disabled = !dirty;
+    showMsg("");
+  } else if (dirty) {
+    const n = changed.size;
+    save.textContent = n === 1 ? "1 alteração não enviada" : `${n} alterações não enviadas`; save.className = "save pend";
+    barSend.hidden = !SHEET_URL;
+    btn.textContent = "Atualizar respostas"; btn.disabled = false;
+    showMsg(`Vocês mudaram ${n === 1 ? "1 resposta" : n + " respostas"} desde o último envio (${fmt(sentAt)}). Cliquem em "Atualizar respostas" para enviar.`, "err");
+  } else {
+    save.textContent = "Enviado " + new Date(sentAt).toLocaleDateString("pt-BR"); save.className = "save ok";
+    barSend.hidden = true;
+    btn.textContent = "Atualizar respostas"; btn.disabled = true;
+    showMsg(`Tudo enviado! Última atualização em ${fmt(sentAt)}. Muito obrigado! Se quiserem mudar algo, é só editar aqui e clicar em "Atualizar respostas".`, "ok");
+  }
+  const ul = document.getElementById("history");
+  ul.replaceChildren(...history.map((iso, i) => h("li", { text: `${i === 0 ? "Primeiro envio" : "Atualização"}: ${fmt(iso)}` })));
+  ul.hidden = history.length < 1;
+}
+
+/* ---------- planilha ---------- */
+// undefined = não deu para consultar; null = planilha ainda sem envios
+async function loadRemote() {
+  if (!SHEET_URL) return undefined;
+  try {
+    const r = await fetch(SHEET_URL + "?acao=ler", { cache: "no-store" });
+    const j = await r.json();
+    return j && j.dados ? j.dados : null;
+  } catch (e) { return undefined; }
+}
+
+async function syncFromSheet() {
+  const d = await loadRemote();
+  if (!d || !d.sentAt) return;
+  if (sentAt && d.sentAt <= sentAt) return; // este aparelho já está em dia
+  const remote = { answers: d.answers, meta: d.meta, sentAt: d.sentAt, sentAnswers: d.answers, history: d.history, lastEdit: d.sentAt };
+  if (lastEdit && lastEdit > d.sentAt) {
+    // edições feitas aqui depois do último envio continuam valendo, comparadas ao envio mais novo
+    const keep = { ...answers }, keepMeta = { ...meta }, keepEdit = lastEdit;
+    adopt(remote);
+    Object.assign(answers, keep); meta = { ...meta, ...keepMeta }; lastEdit = keepEdit;
+  } else {
+    adopt(remote);
+  }
+  saveLocal(); applyAll(); refreshState();
+}
+
+async function send() {
+  const btns = [document.getElementById("sendBtn"), document.getElementById("barSend")];
+  btns.forEach(b => { b.disabled = true; b.textContent = "Enviando…"; });
+  const now = new Date().toISOString();
+  const payload = {
+    sentAt: now,
+    tipo: sentAt ? "Atualização" : "Primeiro envio",
+    alteracoes: sentAt ? changedIds().map(id => ALL_Q.find(q => q.id === id).label) : [],
+    respondidas: ALL_Q.filter(answered).length, total: ALL_Q.length,
+    answers, meta, history: [...history, now],
+    texto: asText(),
+    perguntas: SECTIONS.flatMap(s => s.qs.map(q => ({ bloco: s.title, pergunta: q.label, id: q.id, resposta: answered(q) ? fmtAnswer(q) : "", alteradaEm: meta[q.id] || "" })))
+  };
+  try {
+    // text/plain evita a checagem CORS do navegador; o Apps Script lê o corpo normalmente
+    await fetch(SHEET_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) });
+    const check = await loadRemote();
+    if (check !== undefined && (!check || check.sentAt !== now)) throw new Error("envio não confirmado");
+    sentAt = now; sentAnswers = JSON.parse(JSON.stringify(answers)); history = payload.history;
+    saveLocal();
+    btns.forEach(b => b.disabled = false);
+    refreshState();
+  } catch (e) {
+    btns.forEach(b => { b.disabled = false; b.textContent = "Tentar de novo"; });
+    showMsg("Não conseguimos enviar agora. Confiram a internet e tentem de novo, ou usem \"Copiar respostas em texto\" e mandem pelo WhatsApp.", "err");
   }
 }
 
 if (!SHEET_URL) {
   document.getElementById("sendBtn").hidden = true;
-  document.getElementById("finishText").textContent = "Quando terminarem, cliquem em \"Copiar respostas em texto\" e colem na nossa conversa do WhatsApp.";
+  document.getElementById("finishText").textContent = "Quando terminarem, cliquem em \"Copiar respostas em texto\" e colem na nossa conversa do WhatsApp. As respostas ficam salvas neste aparelho para mudar depois.";
+}
+document.getElementById("sendBtn").addEventListener("click", send);
+document.getElementById("barSend").addEventListener("click", send);
+
+function fmtAnswer(q) {
+  const v = answers[q.id];
+  if (q.type === "pair") return `Rômulo: ${v.romulo || "-"} | Viviane: ${v.viviane || "-"}`;
+  if (q.type === "styles") return STYLES.filter(st => v[st.id]).map(st => `${st.name}: ${({ amei: "amei", talvez: "talvez", nao: "não" })[v[st.id]]}`).join("; ");
+  if (q.type === "scale") return `${v} de 5 (1 = ${q.ends[0].toLowerCase()}, 5 = ${q.ends[1].toLowerCase()})`;
+  if (Array.isArray(v)) return v.join(", ");
+  return String(v);
 }
 
-document.getElementById("sendBtn").addEventListener("click", async () => {
-  const btn = document.getElementById("sendBtn");
-  btn.disabled = true; btn.textContent = "Enviando…";
-  const now = new Date().toISOString();
-  const payload = { sentAt: now, answers, texto: asText(), respondidas: ALL_Q.filter(answered).length, total: ALL_Q.length };
-  try {
-    // text/plain evita a checagem CORS do navegador; o Apps Script lê o corpo normalmente
-    await fetch(SHEET_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) });
-    sentAt = now; dirtyAfterSend = false; saveLocal();
-    showSentState();
-  } catch (e) {
-    showMsg("Não conseguimos enviar agora. Confiram a internet e tentem de novo, ou usem \"Copiar respostas em texto\" e mandem pelo WhatsApp.", "err");
-    btn.textContent = "Tentar de novo";
-  }
-  btn.disabled = false;
-});
-
 function asText() {
-  const lines = ["QUESTIONÁRIO DO CONVITE — Rômulo & Viviane (06/11/2027)", ""];
+  const lines = ["QUESTIONÁRIO DO CONVITE — Rômulo & Viviane (06/11/2027)", sentAt ? "Último envio: " + fmt(sentAt) : "Ainda não enviado", ""];
   for (const s of SECTIONS) {
     const qs = s.qs.filter(answered);
     if (!qs.length) continue;
     lines.push("== " + s.title.toUpperCase() + " ==");
     for (const q of qs) {
-      const v = answers[q.id];
-      let out;
-      if (q.type === "pair") out = `Rômulo: ${v.romulo || "-"} | Viviane: ${v.viviane || "-"}`;
-      else if (q.type === "styles") out = STYLES.filter(st => v[st.id]).map(st => `${st.name}: ${({ amei: "amei", talvez: "talvez", nao: "não" })[v[st.id]]}`).join("; ");
-      else if (q.type === "scale") out = `${v} de 5 (1 = ${q.ends[0].toLowerCase()}, 5 = ${q.ends[1].toLowerCase()})`;
-      else if (Array.isArray(v)) out = v.join(", ");
-      else out = v;
+      const out = fmtAnswer(q);
       lines.push(q.label, "→ " + out, "");
     }
   }
@@ -565,8 +668,9 @@ document.querySelectorAll(".days").forEach(el => el.textContent = days > 0 ? day
 render();
 loadLocal();
 applyAll();
-showSentState();
+refreshState();
 watchSections();
+syncFromSheet();
 </script>
 </body>
 </html>
