@@ -1,0 +1,572 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Questionário Rômulo & Viviane</title>
+<meta name="description" content="Questionário para o convite do casamento de Rômulo e Viviane — 06/11/2027, Niterói.">
+<meta name="robots" content="noindex">
+<meta property="og:title" content="Rômulo & Viviane — questionário do convite">
+<meta property="og:description" content="Contem pra gente como vocês imaginam o convite do casamento.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..700&family=Figtree:wght@400;500;600&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Pinyon+Script&family=DM+Serif+Display&family=Caveat:wght@500&family=Poiret+One&family=Josefin+Sans:wght@300&display=swap">
+<style>
+/* Layout: phone = one column with a sticky progress bar; desktop = sticky sidebar (names, progress, section list) + question column */
+:root {
+  --paper: #F6F7F5;
+  --card: #FFFFFF;
+  --ink: #1E2226;
+  --muted: #646B72;
+  --line: #D9DCDA;
+  --accent: #35566F;
+  --accent-ink: #FFFFFF;
+  --accent-soft: #E2EAF0;
+  --ok: #3C7356;
+  --warn: #9A4A2E;
+  --display: "Bodoni Moda", "Didot", Georgia, serif;
+  --body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --gutter: 18px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #14171A; --card: #1C2024; --ink: #ECEDEA; --muted: #9BA2A8;
+    --line: #2E3439; --accent: #9DBAD0; --accent-ink: #12181D; --accent-soft: #23313C; --ok: #8CC3A4; --warn: #E3A285;
+    color-scheme: dark;
+  }
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.55; -webkit-text-size-adjust: 100%; }
+[hidden] { display: none !important; }
+
+/* ---------- phone first ---------- */
+.layout { display: flex; flex-direction: column; padding-inline: var(--gutter); max-width: 720px; margin: 0 auto; }
+.side { display: contents; }
+.hero { order: 1; padding-block: 52px 8px; }
+.lede { order: 2; padding-block: 8px 28px; }
+.bar { order: 3; }
+#form { order: 4; }
+.finish { order: 5; }
+
+.hero .date { font-size: 12px; letter-spacing: .22em; text-transform: uppercase; color: var(--muted); font-variant-numeric: tabular-nums; }
+.hero h1 { font-family: var(--display); font-weight: 500; font-size: clamp(44px, 12vw, 76px); line-height: .98; margin: 14px 0 0; letter-spacing: -.01em; }
+.hero h1 em { font-style: italic; font-weight: 400; color: var(--accent); }
+.lede p { margin: 0 0 10px; max-width: 60ch; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 16px; font-size: 14px; color: var(--muted); }
+.meta b { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; margin-inline: calc(-1 * var(--gutter)); padding-inline: var(--gutter); background: color-mix(in srgb, var(--paper) 92%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+.progress { display: flex; align-items: center; gap: 14px; padding-block: 10px; }
+.track { flex: 1; height: 4px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.track span { display: block; height: 100%; width: 0; background: var(--accent); transition: width .3s ease; }
+.count { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.save { font-size: 12px; color: var(--muted); white-space: nowrap; }
+.save.ok { color: var(--ok); }
+.jump { display: flex; gap: 6px; overflow-x: auto; padding-block: 0 10px; scrollbar-width: none; }
+.jump::-webkit-scrollbar { display: none; }
+.jump a { flex: none; display: flex; gap: 8px; align-items: baseline; font-size: 13px; color: var(--muted); text-decoration: none; padding: 4px 10px; border: 1px solid var(--line); border-radius: 99px; }
+.jump a .num, .jump a .cnt { display: none; }
+.jump a.done { color: var(--accent); border-color: var(--accent); }
+.jump a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Sections */
+section.block { padding-block: 44px 8px; scroll-margin-top: 92px; }
+.block-head { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; align-items: baseline; margin-bottom: 20px; }
+.block-head .n { font-family: var(--display); font-size: 40px; line-height: 1; color: var(--accent); font-style: italic; grid-row: span 2; }
+.block-head h2 { font-family: var(--display); font-weight: 500; font-size: 28px; margin: 0; line-height: 1.15; text-wrap: balance; }
+.block-head p { margin: 0; color: var(--muted); font-size: 15px; }
+
+.q { padding-block: 20px; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.q > .lbl { font-weight: 600; font-size: 16px; }
+.q .hint { color: var(--muted); font-size: 14px; margin-top: -6px; }
+
+input[type=text], textarea {
+  width: 100%; font: inherit; color: var(--ink); background: var(--card);
+  border: 1px solid var(--line); border-radius: 10px; padding: 11px 13px;
+}
+textarea { min-height: 96px; resize: vertical; }
+input[type=text]:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: transparent; }
+
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.pair label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); min-width: 0; }
+@media (max-width: 460px) { .pair { grid-template-columns: 1fr; } }
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { position: relative; }
+.chip input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.chip span { display: inline-block; padding: 8px 14px; border: 1px solid var(--line); border-radius: 99px; background: var(--card); font-size: 15px; cursor: pointer; transition: background .15s, border-color .15s; }
+.chip:hover span { border-color: var(--accent); }
+.chip input:checked + span { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.chip input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+.chip.font span { font-size: 18px; }
+
+.scale { display: flex; flex-direction: column; gap: 6px; max-width: 520px; }
+.scale .ends { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; color: var(--muted); }
+.scale .chips { flex-wrap: nowrap; justify-content: space-between; }
+.scale .chip { flex: 1; }
+.scale .chip span { width: 100%; text-align: center; padding-inline: 0; font-variant-numeric: tabular-nums; }
+
+.styles { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); gap: 12px; }
+.style { background: var(--card); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; transition: opacity .2s; }
+.style .swatch { display: grid; grid-template-columns: repeat(4, 1fr); height: 30px; }
+.style .sample { padding: 16px 14px 4px; font-size: 30px; line-height: 1.1; min-height: 62px; overflow-wrap: anywhere; }
+.style .txt { padding: 0 14px 10px; }
+.style h3 { margin: 0; font-size: 15px; font-weight: 600; }
+.style .txt p { margin: 2px 0 0; font-size: 13.5px; color: var(--muted); }
+.style .chips { padding: 0 14px 14px; gap: 6px; margin-top: auto; }
+.style .chip span { font-size: 13.5px; padding: 6px 12px; }
+.style[data-r="amei"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.style[data-r="nao"] { opacity: .55; }
+
+.colors { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px; }
+.color { position: relative; }
+.color input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.color span { display: flex; flex-direction: column; gap: 6px; align-items: center; padding: 8px 4px; border: 1px solid var(--line); border-radius: 10px; font-size: 12px; text-align: center; background: var(--card); cursor: pointer; }
+.color i { width: 34px; height: 34px; border-radius: 50%; border: 1px solid rgba(0,0,0,.12); }
+.color input:checked + span { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+.color input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.finish { padding-block: 48px 80px; }
+.finish .box { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 24px; display: flex; flex-direction: column; gap: 14px; }
+.finish h2 { font-family: var(--display); font-weight: 500; font-size: 28px; margin: 0; }
+.finish p { margin: 0; color: var(--muted); }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; }
+button { font: inherit; font-weight: 600; border-radius: 99px; padding: 12px 20px; cursor: pointer; border: 1px solid var(--accent); }
+button.primary { background: var(--accent); color: var(--accent-ink); }
+button.ghost { background: transparent; color: var(--accent); }
+button:disabled { opacity: .6; cursor: wait; }
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.msg { font-weight: 600; }
+.msg.ok { color: var(--ok); }
+.msg.err { color: var(--warn); }
+#copyFallback { min-height: 160px; font-size: 13px; }
+
+/* ---------- desktop ---------- */
+@media (min-width: 1000px) {
+  :root { --gutter: 48px; }
+  .layout {
+    display: grid; max-width: 1240px;
+    grid-template-columns: 300px minmax(0, 1fr);
+    column-gap: 80px; align-items: start;
+  }
+  .side {
+    display: flex; flex-direction: column; gap: 28px;
+    grid-column: 1; grid-row: 1 / span 3;
+    position: sticky; top: 0; align-self: start;
+    height: 100vh; overflow-y: auto; padding-block: 56px 32px;
+  }
+  .hero { padding: 0; }
+  .hero h1 { font-size: 64px; }
+  .lede, #form, .finish { grid-column: 2; max-width: 780px; }
+  .lede { padding-block: 64px 8px; font-size: 17px; }
+  .lede .meta { display: none; }
+  .side .meta-side { display: flex; }
+  .bar { position: static; margin: 0; padding: 0; background: none; backdrop-filter: none; -webkit-backdrop-filter: none; border: 0; display: flex; flex-direction: column; gap: 18px; }
+  .progress { flex-wrap: wrap; gap: 8px 12px; padding: 0; }
+  .track { flex-basis: 100%; }
+  .jump { flex-direction: column; gap: 2px; overflow: visible; padding: 0; border-top: 1px solid var(--line); }
+  .jump a { border: 0; border-bottom: 1px solid var(--line); border-radius: 0; padding: 11px 2px; font-size: 15px; color: var(--ink); display: grid; grid-template-columns: 22px 1fr auto; }
+  .jump a .num { display: block; font-family: var(--display); font-style: italic; color: var(--muted); }
+  .jump a .cnt { display: block; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .jump a:hover { color: var(--accent); }
+  .jump a.done .cnt, .jump a.done .num { color: var(--accent); }
+  .jump a.current { color: var(--accent); font-weight: 600; }
+  section.block { padding-block: 56px 8px; scroll-margin-top: 24px; }
+  .block-head h2 { font-size: 34px; }
+  .block-head .n { font-size: 48px; }
+  .q { display: grid; grid-template-columns: minmax(0, 1fr); }
+}
+.meta-side { display: none; flex-direction: column; gap: 4px; font-size: 14px; color: var(--muted); }
+.meta-side b { color: var(--ink); font-variant-numeric: tabular-nums; }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } html { scroll-behavior: auto; } }
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <aside class="side">
+    <header class="hero">
+      <div class="date">06 · 11 · 2027 — Niterói</div>
+      <h1>Rômulo <em>&amp;</em> Viviane</h1>
+    </header>
+    <div class="meta-side">
+      <span>faltam <b class="days">—</b> dias para o casamento</span>
+    </div>
+    <div class="bar">
+      <div class="progress">
+        <div class="track" aria-hidden="true"><span id="trackFill"></span></div>
+        <span class="count" id="count">0 de 0</span>
+        <span class="save" id="save" role="status"></span>
+      </div>
+      <nav class="jump" id="jump" aria-label="Blocos do questionário"></nav>
+    </div>
+  </aside>
+
+  <div class="lede">
+    <p>Antes de criar o convite de vocês, quero conhecer melhor o casal: o jeito de vocês, o que imaginam para o dia e o que acham bonito.</p>
+    <p>Respondam juntos. Nada é obrigatório, e "ainda não sei" é uma resposta ótima. Tudo fica salvo neste aparelho enquanto vocês respondem, então dá para parar e voltar depois pelo mesmo link.</p>
+    <div class="meta">
+      <span><b>7</b> blocos</span>
+      <span>cerca de <b>15</b> minutos</span>
+      <span>faltam <b class="days">—</b> dias para o casamento</span>
+    </div>
+  </div>
+
+  <main id="form"></main>
+
+  <section class="finish" id="fim">
+    <div class="box">
+      <h2>Prontinho?</h2>
+      <p id="finishText">Quando terminarem, cliquem em "Enviar respostas". Se depois quiserem mudar alguma coisa, é só editar e enviar de novo.</p>
+      <div class="actions">
+        <button class="primary" id="sendBtn" type="button">Enviar respostas</button>
+        <button class="ghost" id="copyBtn" type="button">Copiar respostas em texto</button>
+      </div>
+      <p id="sentMsg" class="msg" role="status" hidden></p>
+      <textarea id="copyFallback" readonly hidden aria-label="Respostas em texto"></textarea>
+    </div>
+  </section>
+</div>
+
+<script>
+/* URL do Google Apps Script (Implantar → App da Web). Vazio = só copiar/colar. */
+const SHEET_URL = "";
+
+const STYLES = [
+  { id: "classico", name: "Clássico atemporal", desc: "Branco, marfim e dourado. Elegância de igreja e salão.", colors: ["#FFFFFF","#EFE8DA","#C9A961","#2B2B2B"], font: "italic 500 32px 'Cormorant Garamond', serif" },
+  { id: "romantico", name: "Romântico floral", desc: "Tons de rosa, muitas flores e letra cursiva.", colors: ["#F6E3E1","#E8B7B5","#B7676D","#6E8B6B"], font: "400 34px 'Pinyon Script', cursive" },
+  { id: "tropical", name: "Tropical carioca", desc: "Folhagens, cor e alegria de verão no Rio.", colors: ["#1F5B43","#F2C14E","#E86A4A","#F7F0E1"], font: "400 30px 'DM Serif Display', serif" },
+  { id: "moderno", name: "Moderno minimalista", desc: "Muito espaço livre, poucas cores, letras marcantes.", colors: ["#FFFFFF","#E5E5E5","#8A8A8A","#111111"], font: "600 22px 'Figtree', sans-serif", upper: true },
+  { id: "boho", name: "Boho rústico", desc: "Tons terrosos, flores secas, cara de feito à mão.", colors: ["#E9DCC9","#C08552","#8C5A3C","#7D8461"], font: "500 34px 'Caveat', cursive" },
+  { id: "mediterraneo", name: "Mediterrâneo", desc: "Azul e branco, limões, oliveiras e sol.", colors: ["#FFFFFF","#2C5D8F","#F3D35B","#7A8B4F"], font: "600 30px 'Cormorant Garamond', serif" },
+  { id: "artdeco", name: "Art déco", desc: "Geometria, preto e dourado, glamour dos anos 20.", colors: ["#0F0F0F","#C8A44D","#F2EBDD","#264653"], font: "400 28px 'Poiret One', sans-serif" },
+  { id: "litoraneo", name: "Litorâneo de Niterói", desc: "O mar de Icaraí, areia, azul e luz de fim de tarde.", colors: ["#F3EBDD","#8FB8C9","#2E5E7E","#E9A97B"], font: "300 26px 'Josefin Sans', sans-serif" },
+  { id: "vintage", name: "Vintage", desc: "Papel antigo, renda e cores desbotadas.", colors: ["#EFE6D2","#C9B79C","#9C6B67","#5B6C5D"], font: "italic 500 30px 'Bodoni Moda', serif" },
+  { id: "editorial", name: "Editorial", desc: "Cara de revista de moda: foto grande e contraste.", colors: ["#FFFFFF","#D9D9D9","#B23A48","#111111"], font: "800 28px 'Bodoni Moda', serif" }
+];
+
+const COLORS = [
+  ["Branco","#FFFFFF"],["Off-white","#F3EEE3"],["Nude","#E3C9B0"],["Champagne","#E8D8B5"],["Dourado","#C9A24A"],
+  ["Rosé","#E7B9B5"],["Blush","#F2D4D7"],["Terracota","#B8613F"],["Marsala","#7B2D3A"],["Lavanda","#C9BEDF"],
+  ["Lilás","#A88BC4"],["Azul serenity","#9FB8D9"],["Azul-marinho","#1F2F52"],["Azul tiffany","#81D1C9"],["Verde sálvia","#A3B59B"],
+  ["Verde-oliva","#6E7444"],["Verde esmeralda","#1E6B52"],["Amarelo","#F0CF5A"],["Coral","#EE8268"],["Caramelo","#9A6337"],
+  ["Cinza","#9B9EA2"],["Preto","#111111"]
+];
+
+const SECTIONS = [
+  { id: "casal", title: "Vocês dois", intro: "Para o convite ter a cara de vocês.", qs: [
+    { id: "historia", type: "textarea", label: "Como vocês se conheceram?", hint: "Pode contar do jeito que vocês contam para os amigos." },
+    { id: "tempo", type: "text", label: "Há quanto tempo estão juntos?" },
+    { id: "palavras", type: "pair", label: "Três palavras que definem o casal", hint: "Cada um responde sem olhar a resposta do outro, se der." },
+    { id: "personalidade", type: "multi", label: "Vocês são mais…", hint: "Marquem quantos quiserem.", options: ["Românticos","Divertidos","Discretos","Festeiros","Aventureiros","Caseiros","Religiosos","Nerds","Viajantes","Artísticos","Esportistas","Bons de garfo"] },
+    { id: "hobbies", type: "textarea", label: "O que vocês amam fazer juntos?" },
+    { id: "apelidos", type: "text", label: "Algum apelido ou piada interna que poderia aparecer?" },
+    { id: "pets", type: "text", label: "Têm pets? Nome e espécie", hint: "Bichinhos costumam aparecer muito bem em convites." },
+    { id: "musica", type: "text", label: "Uma música que é de vocês" },
+    { id: "lugar", type: "text", label: "Um lugar especial para vocês", hint: "Em Niterói ou não: onde se conheceram, o primeiro encontro, uma viagem." }
+  ]},
+  { id: "dia", title: "O grande dia", intro: "O que já está definido e o que ainda está no sonho.", qs: [
+    { id: "igreja", type: "text", label: "Qual é a igreja em Niterói?" },
+    { id: "horario", type: "text", label: "Horário da cerimônia, se já souberem" },
+    { id: "festa_local", type: "text", label: "Onde vai ser a festa?", hint: "Nome do espaço, bairro ou só o tipo de lugar que imaginam." },
+    { id: "festa_distancia", type: "choice", label: "Da igreja até a festa…", options: ["É no mesmo lugar","É perto, até 15 min","Precisa de carro ou transporte","Ainda não sabemos"] },
+    { id: "convidados", type: "choice", label: "Quantos convidados, mais ou menos?", options: ["Até 80","80 a 150","150 a 250","Mais de 250","Ainda não sabemos"] },
+    { id: "formalidade", type: "scale", label: "Quão formal vai ser a festa?", ends: ["Bem descontraída","Super formal"] },
+    { id: "traje", type: "choice", label: "Traje para os convidados", options: ["Esporte fino","Social","Passeio completo","Black tie","Livre","Ainda não sabemos"] },
+    { id: "cerimonia", type: "choice", label: "A cerimônia será…", options: ["Católica","Evangélica","Ecumênica","Outra"] },
+    { id: "ja_sabem", type: "textarea", label: "Já sabem de algo que vai ter na festa?", hint: "Banda, DJ, comida típica, entrada especial, chuva de pétalas…" }
+  ]},
+  { id: "estetica", title: "O que vocês acham bonito", intro: "Essa é a parte mais importante para escolher o estilo do convite.", qs: [
+    { id: "estilos", type: "styles", label: "O que vocês acham de cada estilo?", hint: "Marquem amei, talvez ou não é a gente em cada um. Não precisa ser só um." },
+    { id: "cores_amo", type: "colors", label: "Cores que vocês amam" },
+    { id: "cores_evitar", type: "colors", label: "Cores que não podem aparecer de jeito nenhum" },
+    { id: "cor_obs", type: "text", label: "Tem uma cor bem específica na cabeça?", hint: "Exemplo: o azul do mar de Itacoatiara, o verde de uma planta." },
+    { id: "flores", type: "multi", label: "Flores favoritas", options: ["Rosas","Peônias","Orquídeas","Girassóis","Lírios","Hortênsias","Flores do campo","Folhagens tropicais","Flores secas e capim","Mosquitinho","Tanto faz"] },
+    { id: "letras", type: "fontchoice", label: "Que tipo de letra combina com vocês?", options: [
+      ["Caligráfica", "400 22px 'Pinyon Script', cursive"],
+      ["Clássica com serifa", "italic 500 20px 'Cormorant Garamond', serif"],
+      ["Moderna e limpa", "500 16px 'Figtree', sans-serif"],
+      ["Escrita à mão", "500 21px 'Caveat', cursive"],
+      ["Elegante geométrica", "400 18px 'Poiret One', sans-serif"]
+    ]},
+    { id: "pinterest", type: "text", label: "Têm uma pasta no Pinterest ou perfil de referência?", hint: "Colem o link aqui." },
+    { id: "referencias", type: "textarea", label: "Algum convite, casamento, filme ou lugar que inspira vocês?" }
+  ]},
+  { id: "convite", title: "O convite", intro: "Como vocês imaginam receber e abrir o convite.", qs: [
+    { id: "save_date", type: "choice", label: "Querem um save the date antes do convite?", hint: "É um aviso curto, enviado meses antes, só para os convidados reservarem a data.", options: ["Sim, queremos","Não precisa","Vocês decidem"] },
+    { id: "fotos", type: "choice", label: "Fotos do casal no convite", options: ["Já temos fotos lindas","Vamos fazer um ensaio","Preferimos ilustração","Sem fotos"] },
+    { id: "tom", type: "scale", label: "Tom do texto do convite", ends: ["Formal e tradicional","Leve e divertido"] },
+    { id: "pais", type: "choice", label: "O nome dos pais aparece no convite?", options: ["Sim","Não, só os noivos","Ainda não sabemos"] },
+    { id: "pais_nomes", type: "textarea", label: "Se sim, como os nomes devem aparecer?", hint: "Escrevam exatamente como querem que saia." },
+    { id: "musica_convite", type: "choice", label: "O convite toca uma música ao abrir?", options: ["Sim","Não","Tanto faz"] },
+    { id: "formato", type: "multi", label: "Qual formato chama mais atenção de vocês?", options: ["Envelope que abre na tela","Página com rolagem","Vídeo curto","Cartão animado","Surpreendam a gente"] },
+    { id: "frase", type: "text", label: "Alguma frase, versículo ou citação para incluir?" }
+  ]},
+  { id: "rsvp", title: "Confirmação e logística", intro: "O que o convidado vai precisar saber e responder.", qs: [
+    { id: "prazo", type: "choice", label: "Até quando os convidados devem confirmar?", options: ["30 dias antes","45 dias antes","60 dias antes","Vocês sugerem"] },
+    { id: "acompanhante", type: "choice", label: "Convidado pode levar acompanhante?", options: ["Só quem está no convite","Todos podem levar +1","Depende do convidado"] },
+    { id: "criancas", type: "choice", label: "Crianças", options: ["Bem-vindas","Só as da família","Festa só para adultos","Ainda não sabemos"] },
+    { id: "restricoes", type: "choice", label: "Perguntar sobre restrições alimentares?", options: ["Sim","Não"] },
+    { id: "presentes", type: "multi", label: "Presentes", options: ["Lista em loja","PIX","Cotas de lua de mel","Não mencionar"] },
+    { id: "de_fora", type: "choice", label: "Vêm muitos convidados de outras cidades?", options: ["Muitos","Alguns","Quase nenhum"] },
+    { id: "transporte", type: "choice", label: "Precisa orientar sobre estacionamento ou transporte?", options: ["Sim","Não","Não sabemos"] },
+    { id: "extras", type: "multi", label: "O que mais gostariam de ter junto do convite?", options: ["Contagem regressiva","Mapa e como chegar","Nossa história","Galeria de fotos","Playlist colaborativa","Dicas de Niterói","Perguntas frequentes","Mural de recados"] }
+  ]},
+  { id: "envio", title: "Envio", intro: "Como o convite vai chegar até as pessoas.", qs: [
+    { id: "canais", type: "multi", label: "Por onde enviar?", options: ["WhatsApp","E-mail","Instagram","Impresso com QR code"] },
+    { id: "lista", type: "choice", label: "A lista de convidados está…", options: ["Numa planilha","No papel ou na cabeça","Ainda não começamos"] },
+    { id: "quem_envia", type: "choice", label: "Quem vai disparar os convites?", options: ["Nós mesmos","Quem está fazendo o convite","Cerimonial","Família"] },
+    { id: "personalizado", type: "choice", label: "Link igual para todos ou com o nome de cada convidado?", hint: "Com nome, o convite abre dizendo \"Olá, Ana e Pedro\" e a confirmação já sabe quem é.", options: ["Igual para todos","Com o nome de cada um","Vocês decidem"] }
+  ]},
+  { id: "final", title: "Para fechar", intro: "", qs: [
+    { id: "livre", type: "textarea", label: "Tem algo que não perguntamos e vocês querem contar?" }
+  ]}
+];
+
+const ALL_Q = SECTIONS.flatMap(s => s.qs);
+const DRAFT_KEY = "rv-questionario-v1";
+const answers = {};
+let sentAt = null;
+
+/* ---------- helpers ---------- */
+function h(tag, attrs, ...kids) {
+  const e = document.createElement(tag);
+  for (const k in attrs || {}) {
+    if (k === "class") e.className = attrs[k];
+    else if (k === "text") e.textContent = attrs[k];
+    else e.setAttribute(k, attrs[k]);
+  }
+  for (const c of kids.flat()) if (c != null) e.append(c);
+  return e;
+}
+function answered(q) {
+  const v = answers[q.id];
+  if (v == null) return false;
+  if (Array.isArray(v)) return v.length > 0;
+  if (typeof v === "object") return Object.values(v).some(x => x && String(x).trim());
+  return String(v).trim() !== "";
+}
+function setSave(text, ok) { const s = document.getElementById("save"); s.textContent = text; s.classList.toggle("ok", !!ok); }
+
+/* ---------- render ---------- */
+function chipGroup(q, opts, multi, extraClass) {
+  const name = "q-" + q.id;
+  return h("div", { class: "chips", role: multi ? "group" : "radiogroup", "aria-labelledby": "l-" + q.id },
+    opts.map((o, i) => {
+      const label = Array.isArray(o) ? o[0] : o;
+      const inp = h("input", { type: multi ? "checkbox" : "radio", name, id: name + "-" + i, value: label });
+      inp.addEventListener("change", () => {
+        if (multi) setAnswer(q.id, [...document.querySelectorAll(`input[name="${name}"]:checked`)].map(x => x.value));
+        else setAnswer(q.id, label);
+      });
+      // tocar de novo numa opção já marcada desmarca
+      if (!multi) inp.addEventListener("click", () => { if (answers[q.id] === label) setTimeout(() => { inp.checked = false; setAnswer(q.id, ""); }, 0); });
+      const span = h("span", { text: label });
+      if (Array.isArray(o)) span.style.font = o[1];
+      return h("label", { class: "chip" + (extraClass ? " " + extraClass : "") }, inp, span);
+    }));
+}
+
+function renderQ(q) {
+  const wrap = h("div", { class: "q", id: "w-" + q.id });
+  const isText = q.type === "text" || q.type === "textarea";
+  wrap.append(h(isText ? "label" : "div", { class: "lbl", id: "l-" + q.id, text: q.label, ...(isText ? { for: "q-" + q.id } : {}) }));
+  if (q.hint) wrap.append(h("div", { class: "hint", text: q.hint }));
+
+  if (isText) {
+    const inp = h(q.type === "text" ? "input" : "textarea", { id: "q-" + q.id, ...(q.type === "text" ? { type: "text" } : {}) });
+    inp.addEventListener("input", () => setAnswer(q.id, inp.value));
+    wrap.append(inp);
+  } else if (q.type === "pair") {
+    const mk = (who, key) => {
+      const inp = h("input", { type: "text", id: `q-${q.id}-${key}` });
+      inp.addEventListener("input", () => setAnswer(q.id, { ...(answers[q.id] || {}), [key]: inp.value }));
+      return h("label", {}, who, inp);
+    };
+    wrap.append(h("div", { class: "pair" }, mk("Rômulo", "romulo"), mk("Viviane", "viviane")));
+  } else if (q.type === "choice") {
+    wrap.append(chipGroup(q, q.options, false));
+  } else if (q.type === "fontchoice") {
+    wrap.append(chipGroup(q, q.options, false, "font"));
+  } else if (q.type === "multi") {
+    wrap.append(chipGroup(q, q.options, true));
+  } else if (q.type === "scale") {
+    wrap.append(h("div", { class: "scale" },
+      h("div", { class: "ends" }, h("span", { text: q.ends[0] }), h("span", { text: q.ends[1] })),
+      chipGroup(q, ["1","2","3","4","5"], false)));
+  } else if (q.type === "colors") {
+    const name = "q-" + q.id;
+    wrap.append(h("div", { class: "colors", role: "group", "aria-labelledby": "l-" + q.id },
+      COLORS.map(([n, hex], i) => {
+        const inp = h("input", { type: "checkbox", name, id: name + "-" + i, value: n });
+        inp.addEventListener("change", () => setAnswer(q.id, [...document.querySelectorAll(`input[name="${name}"]:checked`)].map(x => x.value)));
+        const dot = h("i"); dot.style.background = hex;
+        return h("label", { class: "color" }, inp, h("span", {}, dot, n));
+      })));
+  } else if (q.type === "styles") {
+    wrap.append(h("div", { class: "styles" }, STYLES.map(st => {
+      const sw = h("div", { class: "swatch", "aria-hidden": "true" }, st.colors.map(c => { const d = h("div"); d.style.background = c; return d; }));
+      const sample = h("div", { class: "sample", "aria-hidden": "true", text: "Rômulo & Viviane" });
+      sample.style.font = st.font;
+      if (st.upper) { sample.style.textTransform = "uppercase"; sample.style.letterSpacing = ".14em"; }
+      const name = `q-estilos-${st.id}`;
+      const chips = h("div", { class: "chips", role: "radiogroup", "aria-label": st.name },
+        [["amei","Amei"],["talvez","Talvez"],["nao","Não é a gente"]].map(([v, t]) => {
+          const inp = h("input", { type: "radio", name, id: `${name}-${v}`, value: v });
+          inp.addEventListener("change", () => setAnswer("estilos", { ...(answers.estilos || {}), [st.id]: v }));
+          return h("label", { class: "chip" }, inp, h("span", { text: t }));
+        }));
+      return h("div", { class: "style", id: "st-" + st.id }, sw, sample, h("div", { class: "txt" }, h("h3", { text: st.name }), h("p", { text: st.desc })), chips);
+    })));
+  }
+  return wrap;
+}
+
+function render() {
+  const form = document.getElementById("form"), jump = document.getElementById("jump");
+  SECTIONS.forEach((s, i) => {
+    form.append(h("section", { class: "block", id: s.id },
+      h("div", { class: "block-head" }, h("div", { class: "n", text: String(i + 1) }), h("h2", { text: s.title }), s.intro ? h("p", { text: s.intro }) : null),
+      s.qs.map(renderQ)));
+    jump.append(h("a", { href: "#" + s.id, id: "j-" + s.id },
+      h("span", { class: "num", text: String(i + 1) }), h("span", { text: s.title }), h("span", { class: "cnt", id: "c-" + s.id })));
+  });
+}
+
+function applyAll() {
+  for (const q of ALL_Q) {
+    const v = answers[q.id];
+    if (q.type === "text" || q.type === "textarea") {
+      document.getElementById("q-" + q.id).value = v || "";
+    } else if (q.type === "pair") {
+      for (const k of ["romulo", "viviane"]) document.getElementById(`q-${q.id}-${k}`).value = (v && v[k]) || "";
+    } else if (q.type === "styles") {
+      for (const st of STYLES) {
+        const r = v && v[st.id];
+        document.querySelectorAll(`input[name="q-estilos-${st.id}"]`).forEach(x => x.checked = x.value === r);
+      }
+    } else {
+      const vals = Array.isArray(v) ? v : (v ? [v] : []);
+      document.querySelectorAll(`input[name="q-${q.id}"]`).forEach(x => { x.checked = vals.includes(x.value); });
+    }
+  }
+  updateProgress();
+}
+
+function updateProgress() {
+  const done = ALL_Q.filter(answered).length;
+  document.getElementById("count").textContent = `${done} de ${ALL_Q.length}`;
+  document.getElementById("trackFill").style.width = (100 * done / ALL_Q.length) + "%";
+  for (const s of SECTIONS) {
+    const n = s.qs.filter(answered).length;
+    document.getElementById("j-" + s.id).classList.toggle("done", n === s.qs.length);
+    document.getElementById("c-" + s.id).textContent = `${n}/${s.qs.length}`;
+  }
+  for (const st of STYLES) document.getElementById("st-" + st.id).dataset.r = (answers.estilos && answers.estilos[st.id]) || "";
+}
+
+/* ---------- salvar no aparelho ---------- */
+function saveLocal() { try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ answers, sentAt })); return true; } catch (e) { return false; } }
+function loadLocal() {
+  try {
+    const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null");
+    if (d && d.answers) Object.assign(answers, d.answers);
+    if (d && d.sentAt) sentAt = d.sentAt;
+  } catch (e) {}
+}
+let dirtyAfterSend = false;
+function setAnswer(id, value) {
+  answers[id] = value;
+  if (sentAt) dirtyAfterSend = true;
+  setSave(saveLocal() ? "Salvo neste aparelho" : "", true);
+  updateProgress();
+  if (dirtyAfterSend) document.getElementById("sendBtn").textContent = "Enviar alterações";
+}
+
+/* ---------- enviar ---------- */
+function showMsg(text, kind) { const m = document.getElementById("sentMsg"); m.hidden = false; m.textContent = text; m.className = "msg " + kind; }
+
+function showSentState() {
+  if (sentAt && !dirtyAfterSend) {
+    const d = new Date(sentAt);
+    showMsg(`Respostas enviadas em ${d.toLocaleDateString("pt-BR")} às ${d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}. Muito obrigado! Se quiserem mudar algo, é só editar e enviar de novo.`, "ok");
+    document.getElementById("sendBtn").textContent = "Enviar de novo";
+  }
+}
+
+if (!SHEET_URL) {
+  document.getElementById("sendBtn").hidden = true;
+  document.getElementById("finishText").textContent = "Quando terminarem, cliquem em \"Copiar respostas em texto\" e colem na nossa conversa do WhatsApp.";
+}
+
+document.getElementById("sendBtn").addEventListener("click", async () => {
+  const btn = document.getElementById("sendBtn");
+  btn.disabled = true; btn.textContent = "Enviando…";
+  const now = new Date().toISOString();
+  const payload = { sentAt: now, answers, texto: asText(), respondidas: ALL_Q.filter(answered).length, total: ALL_Q.length };
+  try {
+    // text/plain evita a checagem CORS do navegador; o Apps Script lê o corpo normalmente
+    await fetch(SHEET_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) });
+    sentAt = now; dirtyAfterSend = false; saveLocal();
+    showSentState();
+  } catch (e) {
+    showMsg("Não conseguimos enviar agora. Confiram a internet e tentem de novo, ou usem \"Copiar respostas em texto\" e mandem pelo WhatsApp.", "err");
+    btn.textContent = "Tentar de novo";
+  }
+  btn.disabled = false;
+});
+
+function asText() {
+  const lines = ["QUESTIONÁRIO DO CONVITE — Rômulo & Viviane (06/11/2027)", ""];
+  for (const s of SECTIONS) {
+    const qs = s.qs.filter(answered);
+    if (!qs.length) continue;
+    lines.push("== " + s.title.toUpperCase() + " ==");
+    for (const q of qs) {
+      const v = answers[q.id];
+      let out;
+      if (q.type === "pair") out = `Rômulo: ${v.romulo || "-"} | Viviane: ${v.viviane || "-"}`;
+      else if (q.type === "styles") out = STYLES.filter(st => v[st.id]).map(st => `${st.name}: ${({ amei: "amei", talvez: "talvez", nao: "não" })[v[st.id]]}`).join("; ");
+      else if (q.type === "scale") out = `${v} de 5 (1 = ${q.ends[0].toLowerCase()}, 5 = ${q.ends[1].toLowerCase()})`;
+      else if (Array.isArray(v)) out = v.join(", ");
+      else out = v;
+      lines.push(q.label, "→ " + out, "");
+    }
+  }
+  return lines.join("\n");
+}
+document.getElementById("copyBtn").addEventListener("click", () => {
+  const text = asText();
+  const btn = document.getElementById("copyBtn");
+  const fallback = () => { const t = document.getElementById("copyFallback"); t.hidden = false; t.value = text; t.focus(); t.select(); btn.textContent = "Selecionem o texto abaixo e copiem"; };
+  try {
+    navigator.clipboard.writeText(text).then(() => { btn.textContent = "Copiado! Agora é só colar no WhatsApp"; }, fallback);
+  } catch (e) { fallback(); }
+});
+
+/* ---------- seção atual no menu (desktop) ---------- */
+function watchSections() {
+  if (!("IntersectionObserver" in window)) return;
+  const obs = new IntersectionObserver(entries => {
+    for (const e of entries) if (e.isIntersecting) {
+      document.querySelectorAll(".jump a").forEach(a => a.classList.toggle("current", a.id === "j-" + e.target.id));
+    }
+  }, { rootMargin: "-40% 0px -55% 0px" });
+  SECTIONS.forEach(s => obs.observe(document.getElementById(s.id)));
+}
+
+/* ---------- início ---------- */
+const days = Math.ceil((new Date("2027-11-06T00:00:00-03:00") - new Date()) / 86400000);
+document.querySelectorAll(".days").forEach(el => el.textContent = days > 0 ? days : "0");
+render();
+loadLocal();
+applyAll();
+showSentState();
+watchSections();
+</script>
+</body>
+</html>
